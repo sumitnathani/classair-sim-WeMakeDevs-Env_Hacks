@@ -16,5 +16,6 @@ door_pred = door_model.predict(X)
 clog_pred = 100 * (1 - (ach_pred - door_pred/100 * 9) * data["room_volume"] / data["cadr_rated"])
 clog_pred = clog_pred.clip(0, 100)  # physically can't be outside this range
 
+#final part
 mae = mean_absolute_error(data["true_clog_pct"], clog_pred)
 print(f"Derived clog_pct MAE: {mae:.2f} (vs ML model's 22.90)")
