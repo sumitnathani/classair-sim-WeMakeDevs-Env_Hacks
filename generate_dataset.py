@@ -53,6 +53,7 @@ for i in range(n_samples):
         "fault_label": fault
     })
 
+#final call
 dataset = pd.DataFrame(rows)
 dataset.to_csv("training_data.csv", index=False)
 print(f"Generated {len(dataset)} scenarios")
