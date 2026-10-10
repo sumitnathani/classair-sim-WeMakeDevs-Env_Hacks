@@ -1,75 +1,285 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ClassAir — Purifier Verification</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
-    label { display: block; margin-top: 12px; font-weight: bold; }
-    input { width: 100%; padding: 8px; margin-top: 4px; }
-    button { margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    #result { margin-top: 24px; padding: 16px; border-radius: 8px; background: #f3f4f6; display: none; }
-    .fail { background: #fee2e2 !important; }
-    .pass { background: #dcfce7 !important; }
-  </style>
+<meta charset="UTF-8">
+<title>ClassAir — Purifier Verification</title>
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e2e5e9;
+    --accent: #2563eb;
+    --accent-glow: rgba(37, 99, 235, 0.25);
+    --pass-bg: #dcfce7;
+    --pass-text: #166534;
+    --fail-bg: #fee2e2;
+    --fail-text: #991b1b;
+  }
+  [data-theme="dark"] {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --text: #e8e9ec;
+    --muted: #9aa0ac;
+    --border: #2b2f3a;
+    --accent: #5b8cff;
+    --accent-glow: rgba(91, 140, 255, 0.25);
+    --pass-bg: #0f3d23;
+    --pass-text: #4ade80;
+    --fail-bg: #3d1414;
+    --fail-text: #f87171;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 2.1rem;
+    margin: 0;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle { color: var(--muted); margin-top: 4px; margin-bottom: 28px; }
+
+  .theme-toggle {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+  }
+
+  details.manual summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 4px 0;
+  }
+  details.manual[open] summary { margin-bottom: 12px; }
+  .manual-item { margin-bottom: 14px; }
+  .manual-item strong { color: var(--accent); }
+  .manual-item p { margin: 4px 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+
+  label {
+    display: block;
+    margin-top: 14px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .hint { color: var(--muted); font-size: 0.78rem; font-weight: 400; }
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+  button.primary {
+    margin-top: 22px;
+    padding: 13px 24px;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  button.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px var(--accent-glow); }
+  button.primary:active { transform: translateY(0); }
+
+  #result { display: none; }
+  .result-card {
+    padding: 20px;
+    border-radius: 14px;
+    margin-top: 4px;
+  }
+  .pass { background: var(--pass-bg); color: var(--pass-text); }
+  .fail { background: var(--fail-bg); color: var(--fail-text); }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    font-size: 0.95rem;
+  }
+  .metric-row:last-of-type { border-bottom: none; }
+  .metric-label { color: var(--muted); }
+  .metric-value { font-weight: 700; }
+
+  .report-text {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(0,0,0,0.15);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.15);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 40px; }
+</style>
 </head>
-<body>
-  <h1>ClassAir</h1>
-  <p>Enter sensor readings from a classroom to check purifier performance.</p>
+<body data-theme="light">
 
-  <label>PM2.5 at start (µg/m³)</label>
-  <input id="pm25_start" type="number" value="150">
+  <div class="top-bar">
+    <div>
+      <h1>ClassAir</h1>
+      <div class="subtitle">Classroom purifier verification, powered by AWS</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
+  </div>
 
-  <label>PM2.5 at 10 minutes</label>
-  <input id="pm25_at_10min" type="number" value="95">
+  <div class="card">
+    <details class="manual">
+      <summary>📖 How to use this (first time? read this)</summary>
+      <div class="manual-item">
+        <strong>PM2.5 at start</strong>
+        <p>The particulate matter reading (µg/m³) right when the purifier turns on. Get this from a PM2.5 sensor or air quality monitor in the room.</p>
+      </div>
+      <div class="manual-item">
+        <strong>PM2.5 at 10 minutes</strong>
+        <p>The same reading, taken 10 minutes after the purifier started running. Shows how fast it's cleaning the air.</p>
+      </div>
+      <div class="manual-item">
+        <strong>PM2.5 at end (30 min)</strong>
+        <p>The reading after 30 minutes of continuous purifier operation — where the air quality levels off.</p>
+      </div>
+      <div class="manual-item">
+        <strong>Decline rate (first 10 min)</strong>
+        <p>How many µg/m³ the PM2.5 dropped per minute, on average, during the first 10 minutes. Calculate as (start − 10min reading) ÷ 10.</p>
+      </div>
+      <div class="manual-item">
+        <strong>Room volume (m³)</strong>
+        <p>Length × Width × Height of the classroom in meters. A typical Delhi classroom is roughly 150-200 m³.</p>
+      </div>
+      <div class="manual-item">
+        <strong>Purifier rated CADR (m³/hr)</strong>
+        <p>"Clean Air Delivery Rate" — printed on the purifier's box or spec sheet. Tells you how much air it can clean per hour when working at full capacity.</p>
+      </div>
+    </details>
+  </div>
 
-  <label>PM2.5 at end (30 min)</label>
-  <input id="pm25_end" type="number" value="60">
+  <div class="card">
+    <label>PM2.5 at start (µg/m³)</label>
+    <input id="pm25_start" type="number" value="150">
 
-  <label>Decline rate (first 10 min)</label>
-  <input id="decline_rate_10min" type="number" value="5.5" step="0.1">
+    <label>PM2.5 at 10 minutes</label>
+    <input id="pm25_at_10min" type="number" value="95">
 
-  <label>Room volume (m³)</label>
-  <input id="room_volume" type="number" value="180">
+    <label>PM2.5 at end (30 min)</label>
+    <input id="pm25_end" type="number" value="60">
 
-  <label>Purifier rated CADR (m³/hr)</label>
-  <input id="cadr_rated" type="number" value="280">
+    <label>Decline rate (first 10 min) <span class="hint">— µg/m³ per minute</span></label>
+    <input id="decline_rate_10min" type="number" value="5.5" step="0.1">
 
-  <button onclick="runPrediction()">Check Classroom</button>
+    <label>Room volume (m³)</label>
+    <input id="room_volume" type="number" value="180">
+
+    <label>Purifier rated CADR (m³/hr)</label>
+    <input id="cadr_rated" type="number" value="280">
+
+    <button class="primary" onclick="runPrediction()">Check Classroom</button>
+  </div>
 
   <div id="result"></div>
 
-  <script>
-    async function runPrediction() {
-      const body = {
-        pm25_start: parseFloat(document.getElementById("pm25_start").value),
-        pm25_at_10min: parseFloat(document.getElementById("pm25_at_10min").value),
-        pm25_end: parseFloat(document.getElementById("pm25_end").value),
-        decline_rate_10min: parseFloat(document.getElementById("decline_rate_10min").value),
-        room_volume: parseFloat(document.getElementById("room_volume").value),
-        cadr_rated: parseFloat(document.getElementById("cadr_rated").value)
-      };
+  <footer>ClassAir · Hosted on AWS EC2 · Built for WeMakeDevs Environmental Hacks</footer>
 
-      const resultDiv = document.getElementById("result");
-      resultDiv.style.display = "block";
-      resultDiv.className = "";
-      resultDiv.innerHTML = "Checking...";
+<script>
+  function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    body.setAttribute("data-theme", next);
+    localStorage.setItem("classair-theme", next);
+  }
+  (function initTheme() {
+    const saved = localStorage.getItem("classair-theme");
+    if (saved) document.body.setAttribute("data-theme", saved);
+  })();
 
-      const res = await fetch("/report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
+  async function runPrediction() {
+    const body = {
+      pm25_start: parseFloat(document.getElementById("pm25_start").value),
+      pm25_at_10min: parseFloat(document.getElementById("pm25_at_10min").value),
+      pm25_end: parseFloat(document.getElementById("pm25_end").value),
+      decline_rate_10min: parseFloat(document.getElementById("decline_rate_10min").value),
+      room_volume: parseFloat(document.getElementById("room_volume").value),
+      cadr_rated: parseFloat(document.getElementById("cadr_rated").value)
+    };
 
-      resultDiv.className = data.ceew_compliant ? "pass" : "fail";
-      resultDiv.innerHTML = `
-        <strong>ACH: ${data.predicted_ach}</strong> (target: ${data.target_ach})<br>
-        Estimated filter clog: ${data.predicted_clog_pct}%<br>
-        Estimated door-open time: ${data.predicted_door_open_pct}%<br>
-        Compliant: ${data.ceew_compliant ? "Yes" : "No"}<br><br>
-        <em>${data.report}</em>
-      `;
-    }
-  </script>
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = `<div class="card"><span class="spinner"></span>Analyzing classroom data...</div>`;
+
+    const res = await fetch("/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    const statusClass = data.ceew_compliant ? "pass" : "fail";
+    resultDiv.innerHTML = `
+      <div class="result-card ${statusClass}">
+        <div class="metric-row"><span class="metric-label">Air Changes per Hour (ACH)</span><span class="metric-value">${data.predicted_ach} / ${data.target_ach} target</span></div>
+        <div class="metric-row"><span class="metric-label">Estimated filter clog</span><span class="metric-value">${data.predicted_clog_pct}%</span></div>
+        <div class="metric-row"><span class="metric-label">Estimated door-open time</span><span class="metric-value">${data.predicted_door_open_pct}%</span></div>
+        <div class="metric-row"><span class="metric-label">CEEW Compliant</span><span class="metric-value">${data.ceew_compliant ? "✅ Yes" : "❌ No"}</span></div>
+        <div class="report-text">${data.report}</div>
+      </div>
+    `;
+  }
+</script>
 </body>
 </html>

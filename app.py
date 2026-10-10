@@ -34,15 +34,23 @@ def generate_fallback_report(result):
 
 def generate_report(result):
     try:
-        prompt = f"""You are generating a short compliance report for a school principal about classroom air quality.
+        prompt = f"""You are an expert indoor air quality consultant writing a report for a school principal who has no technical background. You specialize in classroom ventilation and CEEW's air purifier guidelines for Indian schools.
 
-Data:
-- Predicted Air Changes per Hour (ACH): {result['predicted_ach']} (CEEW target: 5)
+Classroom sensor data:
+- Predicted Air Changes per Hour (ACH): {result['predicted_ach']} (CEEW recommended target for classrooms: 5 ACH)
 - Estimated filter clog level: {result['predicted_clog_pct']}%
 - Estimated door-open percentage during class: {result['predicted_door_open_pct']}%
-- CEEW compliant: {result['ceew_compliant']}
+- Compliance status: {result['ceew_compliant']}
 
-Write a 3-4 sentence plain-English report for school staff explaining the current status, the likely cause if non-compliant, and one concrete recommended action. Keep it simple, non-technical, and actionable."""
+Write a confident, authoritative report with these sections:
+
+1. **Status Summary** — one sentence stating whether the room meets the CEEW ventilation standard, in plain terms a principal would understand.
+2. **What This Means** — explain, using a simple analogy, what the ACH number actually represents for the children in that room (e.g. how many times the air is fully replaced per hour, and why that matters for health).
+3. **Likely Cause** — if non-compliant, diagnose the probable root cause from the clog% and door% data, and briefly explain the mechanism (e.g. why a clogged filter reduces airflow).
+4. **Recommended Actions** — 2-3 specific, concrete steps, ordered by priority and ease of implementation.
+5. **Technical Note** — one sentence for the facilities team with the precise numbers, for their maintenance log.
+
+Write with expertise and confidence — this should read like it came from a specialist who has inspected thousands of classrooms, not a generic chatbot. Be specific and instructive rather than vague. Keep the total length to under 200 words.."""
 
         response = gemini_model.generate_content(prompt)
         return response.text
