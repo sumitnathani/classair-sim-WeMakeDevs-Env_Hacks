@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ClassAir — Purifier Verification</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input { width: 100%; padding: 8px; margin-top: 4px; }
+    button { margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    #result { margin-top: 24px; padding: 16px; border-radius: 8px; background: #f3f4f6; display: none; }
+    .fail { background: #fee2e2 !important; }
+    .pass { background: #dcfce7 !important; }
+  </style>
+</head>
+<body>
+  <h1>ClassAir</h1>
+  <p>Enter sensor readings from a classroom to check purifier performance.</p>
+
+  <label>PM2.5 at start (µg/m³)</label>
+  <input id="pm25_start" type="number" value="150">
+
+  <label>PM2.5 at 10 minutes</label>
+  <input id="pm25_at_10min" type="number" value="95">
+
+  <label>PM2.5 at end (30 min)</label>
+  <input id="pm25_end" type="number" value="60">
+
+  <label>Decline rate (first 10 min)</label>
+  <input id="decline_rate_10min" type="number" value="5.5" step="0.1">
+
+  <label>Room volume (m³)</label>
+  <input id="room_volume" type="number" value="180">
+
+  <label>Purifier rated CADR (m³/hr)</label>
+  <input id="cadr_rated" type="number" value="280">
+
+  <button onclick="runPrediction()">Check Classroom</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function runPrediction() {
+      const body = {
+        pm25_start: parseFloat(document.getElementById("pm25_start").value),
+        pm25_at_10min: parseFloat(document.getElementById("pm25_at_10min").value),
+        pm25_end: parseFloat(document.getElementById("pm25_end").value),
+        decline_rate_10min: parseFloat(document.getElementById("decline_rate_10min").value),
+        room_volume: parseFloat(document.getElementById("room_volume").value),
+        cadr_rated: parseFloat(document.getElementById("cadr_rated").value)
+      };
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = "block";
+      resultDiv.className = "";
+      resultDiv.innerHTML = "Checking...";
+
+      const res = await fetch("/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+
+      resultDiv.className = data.ceew_compliant ? "pass" : "fail";
+      resultDiv.innerHTML = `
+        <strong>ACH: ${data.predicted_ach}</strong> (target: ${data.target_ach})<br>
+        Estimated filter clog: ${data.predicted_clog_pct}%<br>
+        Estimated door-open time: ${data.predicted_door_open_pct}%<br>
+        Compliant: ${data.ceew_compliant ? "Yes" : "No"}<br><br>
+        <em>${data.report}</em>
+      `;
+    }
+  </script>
+</body>
+</html>
