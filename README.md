@@ -1,6 +1,6 @@
 # ClassAir — Classroom Air Purifier Verification
 
-Built for WeMakeDevs Environmental Hacks (AWS × WeMakeDevs), Heat and Water / Indoor Air track.
+Built for WeMakeDevs Environmental Hacks (AWS × WeMakeDevs), Air track.
 
 ## The Problem
 
