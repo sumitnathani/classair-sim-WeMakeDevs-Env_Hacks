@@ -134,6 +134,8 @@
   .pass { background: var(--pass-bg); color: var(--pass-text); }
   .fail { background: var(--fail-bg); color: var(--fail-text); }
 
+  .overview-text { font-size: 1rem; line-height: 1.65; margin-bottom: 18px; }
+
   .metric-row {
     display: flex;
     justify-content: space-between;
@@ -145,12 +147,17 @@
   .metric-label { color: var(--muted); }
   .metric-value { font-weight: 700; }
 
-  .report-text {
-    margin-top: 16px;
+  .actions-heading {
+    font-weight: 700;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-size: 1.05rem;
     padding-top: 16px;
     border-top: 1px dashed rgba(0,0,0,0.15);
+  }
+  .report-text {
     font-size: 0.95rem;
-    line-height: 1.6;
+    line-height: 1.65;
     white-space: pre-wrap;
   }
 
@@ -272,11 +279,13 @@
     const statusClass = data.ceew_compliant ? "pass" : "fail";
     resultDiv.innerHTML = `
       <div class="result-card ${statusClass}">
+        <div class="overview-text">${data.overview}</div>
         <div class="metric-row"><span class="metric-label">Air Changes per Hour (ACH)</span><span class="metric-value">${data.predicted_ach} / ${data.target_ach} target</span></div>
         <div class="metric-row"><span class="metric-label">Estimated filter clog</span><span class="metric-value">${data.predicted_clog_pct}%</span></div>
         <div class="metric-row"><span class="metric-label">Estimated door-open time</span><span class="metric-value">${data.predicted_door_open_pct}%</span></div>
         <div class="metric-row"><span class="metric-label">CEEW Compliant</span><span class="metric-value">${data.ceew_compliant ? "✅ Yes" : "❌ No"}</span></div>
-        <div class="report-text">${data.report}</div>
+        <div class="actions-heading">🔧 Recommended Action</div>
+        <div class="report-text">${data.actions}</div>
       </div>
     `;
   }
